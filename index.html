@@ -68,10 +68,10 @@
   <!-- BACKDROP GELAP SPOTLIGHT TOUR -->
   <div id="tourBackdrop" class="fixed inset-0 bg-slate-950/75 hidden z-50 transition-opacity"></div>
 
-  <!-- TOOLTIP DETAILED GUIDE (MENEMPEL DI BAWAH ELEMEN YANG DISOROT) -->
+  <!-- TOOLTIP DETAILED GUIDE -->
   <div id="tourTooltip" class="fixed hidden z-[110] bg-white p-5 rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transition-all duration-200">
     <div class="flex items-center justify-between mb-2">
-      <span id="tourStepBadge" class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full">Langkah 1/3</span>
+      <span id="tourStepBadge" class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full">Langkah 1/5</span>
       <button onclick="stopSpotlightTour()" class="text-xs text-slate-400 hover:text-slate-600 font-bold">&times;</button>
     </div>
     
@@ -84,9 +84,9 @@
     </div>
   </div>
 
-  <!-- Modal Form Booking -->
+  <!-- Modal Form Booking (Target Spotlight Step 3) -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
+    <div id="bookingModalContent" class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
       <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       
       <h2 class="text-xl font-bold text-slate-900 mb-1">Ajukan Jadwal Temu</h2>
@@ -143,9 +143,9 @@
     </div>
   </div>
 
-  <!-- Modal Detail Event Terisi -->
+  <!-- Modal Detail Event Terisi (Target Spotlight Step 5) -->
   <div id="detailModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
+    <div id="detailModalContent" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
       <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       
       <div class="flex items-center gap-2 mb-3">
@@ -203,15 +203,26 @@
         desc: "Slot bernuansa hijau menunjukkan ketersediaan jam dosen. Klik slot tersebut untuk mulai mengajukan jadwal temu."
       },
       {
+        targetId: "bookingModalContent",
+        type: "bookingModal",
+        title: "3. Formulir Booking Jadwal",
+        desc: "Isi durasi pertemuan, data diri (nama, email, WhatsApp), topik agenda, serta lampiran jika ada. Lalu klik 'Kirim Pengajuan'."
+      },
+      {
         targetSelector: ".first-booked-slot",
-        title: "3. Slot 'Terisi / Booked' (Warna Merah)",
-        desc: "Slot berwarna merah menandakan jam tersebut sudah terisi. Anda dapat mengeklik untuk melihat rincian acaranya."
+        title: "4. Slot 'Terisi / Booked' (Warna Merah)",
+        desc: "Setelah diajukan, slot akan berubah menjadi merah. Anda dapat mengeklik slot terisi ini untuk melihat detailnya."
+      },
+      {
+        targetId: "detailModalContent",
+        type: "detailModal",
+        title: "5. Detail Jadwal Ter-booked",
+        desc: "Di jendela ini, seluruh pengguna dapat melihat informasi ringkas mengenai agenda yang sudah terkonfirmasi pada slot waktu tersebut."
       }
     ];
 
     function startSpotlightTour() {
       currentSpotlightStep = 1;
-      // Naikkan z-index header agar child element-nya (targetWeekNav) tidak terpotong stacking context
       document.getElementById('mainHeader').style.zIndex = "100";
       document.getElementById('tourBackdrop').classList.remove('hidden');
       document.getElementById('tourTooltip').classList.remove('hidden');
@@ -220,6 +231,8 @@
 
     function stopSpotlightTour() {
       clearHighlights();
+      closeModal();
+      closeDetailModal();
       document.getElementById('mainHeader').style.zIndex = "10";
       document.getElementById('tourBackdrop').classList.add('hidden');
       document.getElementById('tourTooltip').classList.add('hidden');
@@ -242,6 +255,24 @@
       clearHighlights();
       const stepData = tourSteps[stepIndex - 1];
       
+      // Buka/tutup modal otomatis sesuai konteks langkah
+      if (stepData.type === "bookingModal") {
+        closeDetailModal();
+        selectedStartTime = new Date().toISOString();
+        selectedEndTime = new Date().toISOString();
+        document.getElementById('selectedSlotText').innerText = "📅 Contoh Demo | Slot 09:00 - 09:30 WIB";
+        document.getElementById('bookingModal').classList.remove('hidden');
+      } else if (stepData.type === "detailModal") {
+        closeModal();
+        document.getElementById('detailTitle').innerText = "Bimbingan Skripsi (Demo)";
+        document.getElementById('detailTime').innerText = "🕒 Rentang Waktu: 09:00 - 09:30 WIB";
+        document.getElementById('detailPemohon').innerText = "Ahmad Rizky";
+        document.getElementById('detailModal').classList.remove('hidden');
+      } else {
+        closeModal();
+        closeDetailModal();
+      }
+
       let targetEl = null;
       if (stepData.targetId) {
         targetEl = document.getElementById(stepData.targetId);
@@ -263,20 +294,22 @@
       document.getElementById('tourPrevBtn').disabled = stepIndex === 1;
       document.getElementById('tourNextBtn').innerText = stepIndex === tourSteps.length ? "Selesai" : "Lanjut \u2192";
 
-      // Perhitungan posisi tooltip presisi di bawah elemen yang di-highlight
+      // Hitung posisi tooltip di dekat elemen yang di-highlight
       const rect = targetEl.getBoundingClientRect();
       const tooltip = document.getElementById('tourTooltip');
       
       let topPos = rect.bottom + window.scrollY + 12;
       let leftPos = rect.left + window.scrollX;
 
-      // Geser posisi horisontal agar tidak terpotong layar kanan
       if (leftPos + 380 > window.innerWidth) {
         leftPos = window.innerWidth - 400;
       }
 
-      // Jika posisi bawah terlalu melimpah, tampilkan di atas elemen
-      if (rect.bottom + 220 > window.innerHeight) {
+      if (stepData.type === "bookingModal" || stepData.type === "detailModal") {
+        topPos = rect.top + window.scrollY + 20;
+        leftPos = rect.right + window.scrollX - 380;
+        if (leftPos < 20) leftPos = 20;
+      } else if (rect.bottom + 220 > window.innerHeight) {
         topPos = rect.top + window.scrollY - 210;
       }
 
