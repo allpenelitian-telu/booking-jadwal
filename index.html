@@ -3,7 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Jadwal Dosen</title>
+
+  <!-- ========================================== -->
+  <!-- META IDENTITAS & SEO                       -->
+  <!-- ========================================== -->
+  <title>Booking Jadwal Dosen | Platform Reservasi Konsultasi & Bimbingan</title>
+  <meta name="description" content="Platform resmi reservasi jadwal temu, bimbingan skripsi, dan konsultasi dosen. Lihat ketersediaan slot waktu 30 menit real-time dan ajukan jadwal dengan mudah.">
+  <meta name="keywords" content="booking jadwal dosen, reservasi bimbingan, konsultasi mahasiswa, google calendar booking, jadwal dosen online">
+  <meta name="author" content="ANM 2026">
+
+  <!-- ========================================== -->
+  <!-- OPEN GRAPH (OG) META TAGS (WA / FB / TELEGRAM) -->
+  <!-- ========================================== -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://allpenelitian-telu.github.io/booking-jadwal/">
+  <meta property="og:title" content="Booking Jadwal Temu Dosen">
+  <meta property="og:description" content="Ajukan jadwal bimbingan dan konsultasi dosen secara online. Cek ketersediaan slot jam kerja Senin–Jumat interval 30 menit secara terintegrasi.">
+  <!-- Gambar Preview saat di-share di WA (Gunakan ikon SVG/PNG berresolusi jernih) -->
+  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:site_name" content="Aplikasi Booking Jadwal Dosen">
+
+  <!-- ========================================== -->
+  <!-- TWITTER CARDS                              -->
+  <!-- ========================================== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Booking Jadwal Temu Dosen">
+  <meta name="twitter:description" content="Platform reservasi jam kerja & konsultasi bimbingan dosen terintegrasi Google Calendar.">
+  <meta name="twitter:image" content="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+
+  <!-- ========================================== -->
+  <!-- FAVICON & WEB ICONS                        -->
+  <!-- ========================================== -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+  <meta name="theme-color" content="#0f172a">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Inter -->
@@ -255,7 +293,6 @@
       clearHighlights();
       const stepData = tourSteps[stepIndex - 1];
       
-      // Buka/tutup modal otomatis sesuai konteks langkah
       if (stepData.type === "bookingModal") {
         closeDetailModal();
         selectedStartTime = new Date().toISOString();
@@ -286,7 +323,6 @@
 
       targetEl.classList.add('spotlight-active');
 
-      // Update Tooltip UI
       document.getElementById('tourStepBadge').innerText = `Langkah ${stepIndex}/${tourSteps.length}`;
       document.getElementById('tourTitle').innerText = stepData.title;
       document.getElementById('tourDesc').innerText = stepData.desc;
@@ -294,7 +330,6 @@
       document.getElementById('tourPrevBtn').disabled = stepIndex === 1;
       document.getElementById('tourNextBtn').innerText = stepIndex === tourSteps.length ? "Selesai" : "Lanjut \u2192";
 
-      // Hitung posisi tooltip di dekat elemen yang di-highlight
       const rect = targetEl.getBoundingClientRect();
       const tooltip = document.getElementById('tourTooltip');
       
