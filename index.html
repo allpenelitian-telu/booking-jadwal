@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Jadwal Dosen ANM</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+  <!-- Header Profil Dosen & Filter Tanggal -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center font-bold text-lg justify-center shadow">
+          DS
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
+          <p class="text-xs text-slate-500">Senin – Jumat | 08:00 – 20:00 WIB (Interval 30 Menit)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <label for="datePicker" class="text-xs font-semibold text-slate-600">Pilih Tanggal:</label>
+        <input type="date" id="datePicker" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-slate-900 outline-none">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content: Kanban Board (5 Hari Kerja) -->
+  <main class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto" id="kanbanBoard">
+      <!-- Kolom Senin - Jumat di-render via JavaScript -->
+    </div>
+  </main>
+
+  <!-- Modal Form Booking -->
+  <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      
+      <h2 class="text-xl font-bold text-slate-900 mb-1">Ajukan Jadwal Temu</h2>
+      <p id="selectedSlotText" class="text-xs font-semibold text-indigo-600 mb-6 bg-indigo-50 p-2 rounded-lg inline-block"></p>
+
+      <form id="bookingForm" onsubmit="submitBooking(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap *</label>
+          <input type="text" id="nama" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none" placeholder="Masukkan nama lengkap Anda">
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Email *</label>
+            <input type="email" id="email" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none" placeholder="nama@email.com">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">No. WhatsApp *</label>
+            <input type="tel" id="wa" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none" placeholder="08123456789">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Agenda / Topik *</label>
+          <input type="text" id="judul" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none" placeholder="Contoh: Bimbingan Skripsi / Konsultasi Matkul">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan / Detail Agenda</label>
+          <textarea id="keterangan" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none" placeholder="Penjelasan singkat mengenai topik yang ingin dibahas..."></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Attachment / Lampiran Berkas (Opsional)</label>
+          <input type="file" id="attachment" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+        </div>
+
+        <div class="pt-3">
+          <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-slate-800 transition shadow">
+            Kirim Pengajuan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // WEB APP URL GOOGLE APPS SCRIPT
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdIgzxqWNmvBL0_nrbANSEFyAsuKSaLHbyU74JLRIZDlYrJ6TQPxmZH8LC_BDYDw3gbw/exec";
+
+    let selectedStartTime = null;
+    let selectedEndTime = null;
+
+    const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
+
+    window.onload = () => {
+      initDatePicker();
+      renderKanban();
+    };
+
+    function initDatePicker() {
+      const today = new Date();
+      
+      // Jika hari ini Sabtu (6) atau Minggu (0), arahkan default ke hari Senin terdekat
+      const dayOfWeek = today.getDay();
+      if (dayOfWeek === 0) {
+        today.setDate(today.getDate() + 1);
+      } else if (dayOfWeek === 6) {
+        today.setDate(today.getDate() + 2);
+      }
+
+      document.getElementById('datePicker').value = today.toISOString().split('T')[0];
+      document.getElementById('datePicker').addEventListener('change', renderKanban);
+    }
+
+    function renderKanban() {
+      const board = document.getElementById('kanbanBoard');
+      board.innerHTML = '';
+
+      const baseDate = new Date(document.getElementById('datePicker').value);
+
+      days.forEach((dayName, index) => {
+        const col = document.createElement('div');
+        col.className = "bg-white rounded-xl border border-slate-200 p-3 flex flex-col gap-2 shadow-sm min-w-[200px]";
+        
+        // Header Hari
+        col.innerHTML = `<div class="font-bold text-sm text-slate-700 pb-2 border-b border-slate-100 flex justify-between items-center">
+          <span>${dayName}</span>
+        </div>`;
+
+        // Generate Slot 08:00 - 20:00 (Interval 30 Menit)
+        for (let hour = 8; hour < 20; hour++) {
+          ["00", "30"].forEach(minute => {
+            const timeStart = `${String(hour).padStart(2, '0')}:${minute}`;
+            const nextHour = minute === "30" ? hour + 1 : hour;
+            const nextMinute = minute === "30" ? "00" : "30";
+            const timeEnd = `${String(nextHour).padStart(2, '0')}:${nextMinute}`;
+
+            const slotBtn = document.createElement('button');
+            slotBtn.className = "text-xs p-2.5 rounded-lg border border-dashed border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition text-slate-600 text-left font-medium flex justify-between items-center";
+            slotBtn.innerHTML = `<span>${timeStart} - ${timeEnd}</span> <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">Tersedia</span>`;
+            
+            slotBtn.onclick = () => openBookingModal(dayName, timeStart, timeEnd);
+            col.appendChild(slotBtn);
+          });
+        }
+        board.appendChild(col);
+      });
+    }
+
+    function openBookingModal(day, start, end) {
+      const baseDate = document.getElementById('datePicker').value;
+      selectedStartTime = `${baseDate}T${start}:00`;
+      selectedEndTime = `${baseDate}T${end}:00`;
+
+      document.getElementById('selectedSlotText').innerText = `📅 ${day} | Slot ${start} - ${end} WIB`;
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('bookingModal').classList.add('hidden');
+      document.getElementById('bookingForm').reset();
+    }
+
+    async function submitBooking(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Mengirim...";
+
+      const fileInput = document.getElementById('attachment');
+      let attachmentData = null;
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const base64 = await convertBase64(file);
+        attachmentData = {
+          fileName: file.name,
+          mimeType: file.type,
+          base64: base64
+        };
+      }
+
+      const payload = {
+        nama: document.getElementById('nama').value,
+        email: document.getElementById('email').value,
+        wa: document.getElementById('wa').value,
+        judul: document.getElementById('judul').value,
+        keterangan: document.getElementById('keterangan').value,
+        startTime: selectedStartTime,
+        endTime: selectedEndTime,
+        attachment: attachmentData
+      };
+
+      try {
+        const res = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await res.json();
+
+        if (result.status === 'success') {
+          alert('Berhasil! Jadwal telah diajukan dan dicatat di Google Calendar.');
+          closeModal();
+        } else {
+          alert('Gagal: ' + result.message);
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Kirim Pengajuan";
+      }
+    }
+
+    function convertBase64(file) {
+      return new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
+        fileReader.readAsDataURL(file);
+        fileReader.onload = () => resolve(fileReader.result);
+        fileReader.onerror = (error) => reject(error);
+      });
+    }
+  </script>
+</body>
+</html>
