@@ -10,6 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
+    
+    /* CSS Kelas Khusus Spotlight Highlight */
+    .spotlight-active {
+      position: relative !important;
+      z-index: 60 !important;
+      background-color: white !important;
+      box-shadow: 0 0 0 4px #6366f1, 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+      border-radius: 0.75rem !important;
+      transition: all 0.3s ease;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
@@ -26,17 +36,17 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
-              <!-- Tombol Pemicu Tutorial Manual -->
-              <button onclick="openGuideModal(1)" class="text-[11px] bg-indigo-50 text-indigo-600 font-semibold px-2.5 py-1 rounded-full border border-indigo-200 hover:bg-indigo-100 transition">
-                ❓ Cara Pakai
+              <!-- Tombol Pemicu Tutorial Spotlight -->
+              <button onclick="startSpotlightTour()" class="text-[11px] bg-indigo-50 text-indigo-600 font-semibold px-2.5 py-1 rounded-full border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-1">
+                <span>❓</span> Cara Pakai
               </button>
             </div>
             <p class="text-xs text-slate-500">Senin – Jumat | 08:00 – 20:00 WIB (Interval 30 Menit)</p>
           </div>
         </div>
 
-        <!-- Navigasi Minggu (Previous / Next Week) -->
-        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <!-- Target Spotlight Step 1: Navigasi Minggu -->
+        <div id="targetWeekNav" class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 transition-all">
           <button onclick="changeWeek(-1)" class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg shadow-sm hover:bg-slate-50 transition text-slate-700">&larr; Minggu Lalu</button>
           <span id="weekLabel" class="text-xs font-bold px-2 text-slate-700 min-w-[140px] text-center">--</span>
           <button onclick="changeWeek(1)" class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg shadow-sm hover:bg-slate-50 transition text-slate-700">Minggu Depan &rarr;</button>
@@ -49,97 +59,34 @@
       <div id="loadingStatus" class="hidden text-center py-4 text-xs font-semibold text-slate-500">
         ⏳ Menyinkronkan jadwal dari Google Calendar...
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto" id="kanbanBoard">
+      
+      <!-- Target Spotlight Step 2 & 3: Board Kanban -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto p-1" id="kanbanBoard">
         <!-- Kolom Senin - Jumat di-render via JavaScript -->
       </div>
     </main>
   </div>
 
-  <!-- MODAL TUTORIAL / OVERLAY USER MANUAL STEP-BY-STEP -->
-  <div id="guideModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
-      
-      <!-- Progress Bar & Indicator Step -->
-      <div class="flex items-center justify-between mb-4">
-        <span id="guideStepBadge" class="text-[10px] uppercase tracking-wider font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full border border-indigo-100">Langkah 1 dari 5</span>
-        <button onclick="closeGuideModal()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">Lewati</button>
-      </div>
+  <!-- OVERLAY / GELAPKAN TAMPILAN UNTUK SPOTLIGHT -->
+  <div id="tourBackdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs hidden z-50 transition-opacity"></div>
 
-      <!-- Konten Step 1 -->
-      <div id="guideStep1" class="guide-step">
-        <div class="text-3xl mb-2">📅</div>
-        <h3 class="text-base font-bold text-slate-900 mb-2">1. Pilih Minggu Pertemuan</h3>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Gunakan tombol **"Minggu Lalu / Minggu Depan"** di bagian kanan atas header untuk berpindah ke minggu yang Anda inginkan.
-        </p>
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-500 italic mb-6">
-          💡 Tanggal pasti untuk hari Senin hingga Jumat akan otomatis disesuaikan.
-        </div>
-      </div>
-
-      <!-- Konten Step 2 -->
-      <div id="guideStep2" class="guide-step hidden">
-        <div class="text-3xl mb-2">🟢</div>
-        <h3 class="text-base font-bold text-slate-900 mb-2">2. Pilih Slot "Tersedia"</h3>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Cari kolom hari dan rentang jam kerja (08:00 - 20:00 WIB). Klik pada slot yang berwarna hijau bertuliskan **"Tersedia"**.
-        </p>
-        <div class="p-2.5 rounded-lg border border-dashed border-slate-300 bg-white text-xs font-medium text-slate-600 flex justify-between items-center mb-6">
-          <span>09:00 - 09:30</span>
-          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">Tersedia</span>
-        </div>
-      </div>
-
-      <!-- Konten Step 3 -->
-      <div id="guideStep3" class="guide-step hidden">
-        <div class="text-3xl mb-2">⏱️</div>
-        <h3 class="text-base font-bold text-slate-900 mb-2">3. Tentukan Durasi & Isi Identitas</h3>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Pilih berapa lama Anda ingin bertemu (30 Menit, 1 Jam, 1.5 Jam, atau 2 Jam). Lalu lengkapi nama, email Google, dan WhatsApp Anda.
-        </p>
-        <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs text-indigo-700 mb-6">
-          📌 Waktu selesai akan otomatis terkalkulasi tanpa melebihi jam operasional 20:00 WIB.
-        </div>
-      </div>
-
-      <!-- Konten Step 4 -->
-      <div id="guideStep4" class="guide-step hidden">
-        <div class="text-3xl mb-2">📎</div>
-        <h3 class="text-base font-bold text-slate-900 mb-2">4. Lampiran & Kirim Pengajuan</h3>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Unggah berkas pendukung (seperti draft proposal/skripsi) jika ada, lalu klik tombol **"Kirim Pengajuan"**.
-        </p>
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-500 mb-6">
-          📧 Undangan Google Calendar & konfirmasi email akan otomatis terkirim ke email Anda.
-        </div>
-      </div>
-
-      <!-- Konten Step 5 -->
-      <div id="guideStep5" class="guide-step hidden">
-        <div class="text-3xl mb-2">🔴</div>
-        <h3 class="text-base font-bold text-slate-900 mb-2">5. Slot Terisi / Booked</h3>
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Setelah pengajuan berhasil, slot jam tersebut akan berubah menjadi warna merah bertuliskan **"Terisi"** di papan Kanban dan tidak bisa dipilih orang lain.
-        </p>
-        <div class="p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-xs font-medium flex justify-between items-center mb-6">
-          <div>
-            <div class="font-bold text-[11px]">Bimbingan Skripsi</div>
-            <div class="text-[10px] opacity-75">09:00 - 09:30</div>
-          </div>
-          <span class="text-[9px] bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded font-bold">Terisi</span>
-        </div>
-      </div>
-
-      <!-- Footer Tombol Navigasi Guide -->
-      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-        <button id="guidePrevBtn" onclick="navigateGuide(-1)" class="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-30" disabled>&larr; Kembali</button>
-        <button id="guideNextBtn" onclick="navigateGuide(1)" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Lanjut &rarr;</button>
-      </div>
-
+  <!-- FLOATING CARD PETUNJUK OVERLAY (Menempel dekat elemen terang) -->
+  <div id="tourTooltip" class="fixed hidden z-70 bg-white p-5 rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transition-all duration-300">
+    <div class="flex items-center justify-between mb-2">
+      <span id="tourStepBadge" class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Langkah 1/3</span>
+      <button onclick="stopSpotlightTour()" class="text-xs text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+    </div>
+    
+    <h3 id="tourTitle" class="text-sm font-bold text-slate-900 mb-1"></h3>
+    <p id="tourDesc" class="text-xs text-slate-600 leading-relaxed mb-4"></p>
+    
+    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+      <button id="tourPrevBtn" onclick="navigateSpotlight(-1)" class="text-xs font-semibold text-slate-400 hover:text-slate-600 disabled:opacity-30" disabled>&larr; Kembali</button>
+      <button id="tourNextBtn" onclick="navigateSpotlight(1)" class="bg-indigo-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-700 transition shadow">Lanjut &rarr;</button>
     </div>
   </div>
 
-  <!-- Modal Form Booking -->
+  <!-- Modal Form Booking (Target Spotlight Step 4) -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
       <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
@@ -235,56 +182,113 @@
     let baseStartHour = null;
     let baseStartMinute = null;
     let currentDayName = "";
-    let currentGuideStep = 1;
+    let currentSpotlightStep = 1;
 
     const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
     window.onload = () => {
       fetchEventsAndRender();
-      
-      // Tampilkan tutorial otomatis jika belum pernah dilihat
-      if (!localStorage.getItem('hasSeenGuide')) {
-        openGuideModal(1);
-      }
     };
 
-    // FUNGSI NAVIGASI TUTORIAL ONBOARDING
-    function openGuideModal(step = 1) {
-      currentGuideStep = step;
-      updateGuideUI();
-      document.getElementById('guideModal').classList.remove('hidden');
+    // ==========================================
+    // LOGIKA SPOTLIGHT TOUR / USER MANUAL
+    // ==========================================
+    const tourSteps = [
+      {
+        targetId: "targetWeekNav",
+        title: "1. Navigasi Pilihan Minggu",
+        desc: "Klik tombol 'Minggu Lalu' atau 'Minggu Depan' di sini untuk melihat ketersediaan jadwal dosen pada minggu tertentu.",
+        pos: "bottom"
+      },
+      {
+        targetSelector: ".first-available-slot",
+        title: "2. Slot 'Tersedia' (Warna Hijau)",
+        desc: "Slot bernuansa hijau menunjukkan ketersediaan jam dosen. Klik slot tersebut untuk mulai mengajukan jadwal temu.",
+        pos: "center"
+      },
+      {
+        targetSelector: ".first-booked-slot",
+        title: "3. Slot 'Terisi / Booked' (Warna Merah)",
+        desc: "Slot berwarna merah menandakan jam tersebut sudah dipesan oleh mahasiswa lain atau diisi agenda dosen. Anda dapat mengeklik untuk melihat rincian acaranya.",
+        pos: "center"
+      }
+    ];
+
+    function startSpotlightTour() {
+      currentSpotlightStep = 1;
+      document.getElementById('tourBackdrop').classList.remove('hidden');
+      document.getElementById('tourTooltip').classList.remove('hidden');
+      showSpotlightStep(currentSpotlightStep);
     }
 
-    function closeGuideModal() {
-      document.getElementById('guideModal').classList.add('hidden');
-      localStorage.setItem('hasSeenGuide', 'true');
+    function stopSpotlightTour() {
+      clearHighlights();
+      document.getElementById('tourBackdrop').classList.add('hidden');
+      document.getElementById('tourTooltip').classList.add('hidden');
     }
 
-    function navigateGuide(direction) {
-      currentGuideStep += direction;
-      if (currentGuideStep > 5) {
-        closeGuideModal();
+    function navigateSpotlight(direction) {
+      currentSpotlightStep += direction;
+      if (currentSpotlightStep > tourSteps.length) {
+        stopSpotlightTour();
         return;
       }
-      updateGuideUI();
+      showSpotlightStep(currentSpotlightStep);
     }
 
-    function updateGuideUI() {
-      document.getElementById('guideStepBadge').innerText = `Langkah ${currentGuideStep} dari 5`;
+    function clearHighlights() {
+      document.querySelectorAll('.spotlight-active').forEach(el => el.classList.remove('spotlight-active'));
+    }
+
+    function showSpotlightStep(stepIndex) {
+      clearHighlights();
+      const stepData = tourSteps[stepIndex - 1];
       
-      for (let i = 1; i <= 5; i++) {
-        const stepElem = document.getElementById(`guideStep${i}`);
-        if (i === currentGuideStep) {
-          stepElem.classList.remove('hidden');
-        } else {
-          stepElem.classList.add('hidden');
-        }
+      let targetEl = null;
+      if (stepData.targetId) {
+        targetEl = document.getElementById(stepData.targetId);
+      } else if (stepData.targetSelector) {
+        targetEl = document.querySelector(stepData.targetSelector);
       }
 
-      document.getElementById('guidePrevBtn').disabled = currentGuideStep === 1;
-      document.getElementById('guideNextBtn').innerText = currentGuideStep === 5 ? "Selesai & Mengerti" : "Lanjut \u2192";
+      // Jika target berupa slot terisi dan saat itu belum ada, fallback ke elemen kanban
+      if (!targetEl) {
+        targetEl = document.getElementById('kanbanBoard');
+      }
+
+      targetEl.classList.add('spotlight-active');
+
+      // Update Tooltip UI
+      document.getElementById('tourStepBadge').innerText = `Langkah ${stepIndex}/${tourSteps.length}`;
+      document.getElementById('tourTitle').innerText = stepData.title;
+      document.getElementById('tourDesc').innerText = stepData.desc;
+
+      document.getElementById('tourPrevBtn').disabled = stepIndex === 1;
+      document.getElementById('tourNextBtn').innerText = stepIndex === tourSteps.length ? "Selesai" : "Lanjut \u2192";
+
+      // Hitung Posisi Tooltip Melayang mendekati Elemen Target
+      const rect = targetEl.getBoundingClientRect();
+      const tooltip = document.getElementById('tourTooltip');
+      
+      let topPos = rect.bottom + window.scrollY + 12;
+      let leftPos = rect.left + window.scrollX;
+
+      if (leftPos + 380 > window.innerWidth) {
+        leftPos = window.innerWidth - 400;
+      }
+      if (topPos + 200 > window.innerHeight + window.scrollY) {
+        topPos = rect.top + window.scrollY - 180;
+      }
+
+      tooltip.style.top = `${Math.max(20, topPos)}px`;
+      tooltip.style.left = `${Math.max(20, leftPos)}px`;
+
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    // ==========================================
+    // LOGIKA CORE APLIKASI
+    // ==========================================
     function getMonday(d) {
       const date = new Date(d);
       const day = date.getDay();
@@ -333,6 +337,9 @@
       const endStr = currentFriday.toLocaleDateString('id-ID', { ...optionsMonth, year: 'numeric' });
       document.getElementById('weekLabel').innerText = `${startStr} - ${endStr}`;
 
+      let setFirstAvailable = false;
+      let setFirstBooked = false;
+
       dayNames.forEach((dayName, index) => {
         const colDate = new Date(currentMonday);
         colDate.setDate(colDate.getDate() + index);
@@ -370,6 +377,10 @@
             
             if (existingEvent) {
               slotBtn.className = "text-xs p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-left font-medium flex justify-between items-center cursor-pointer shadow-sm";
+              if (!setFirstBooked) {
+                slotBtn.classList.add('first-booked-slot');
+                setFirstBooked = true;
+              }
               slotBtn.innerHTML = `
                 <div class="truncate max-w-[110px]">
                   <div class="font-bold text-[11px] truncate">${existingEvent.title}</div>
@@ -380,6 +391,10 @@
               slotBtn.onclick = () => openDetailModal(existingEvent);
             } else {
               slotBtn.className = "text-xs p-2.5 rounded-lg border border-dashed border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition text-slate-600 text-left font-medium flex justify-between items-center";
+              if (!setFirstAvailable) {
+                slotBtn.classList.add('first-available-slot');
+                setFirstAvailable = true;
+              }
               slotBtn.innerHTML = `<span>${timeStart} - ${timeEnd}</span> <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">Tersedia</span>`;
               slotBtn.onclick = () => openBookingModal(dayName, dateFormatted, dateISO, timeStart);
             }
