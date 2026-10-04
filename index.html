@@ -24,7 +24,13 @@
             DS
           </div>
           <div>
-            <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
+            <div class="flex items-center gap-2">
+              <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
+              <!-- Tombol Pemicu Tutorial Manual -->
+              <button onclick="openGuideModal(1)" class="text-[11px] bg-indigo-50 text-indigo-600 font-semibold px-2.5 py-1 rounded-full border border-indigo-200 hover:bg-indigo-100 transition">
+                ❓ Cara Pakai
+              </button>
+            </div>
             <p class="text-xs text-slate-500">Senin – Jumat | 08:00 – 20:00 WIB (Interval 30 Menit)</p>
           </div>
         </div>
@@ -49,6 +55,90 @@
     </main>
   </div>
 
+  <!-- MODAL TUTORIAL / OVERLAY USER MANUAL STEP-BY-STEP -->
+  <div id="guideModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
+      
+      <!-- Progress Bar & Indicator Step -->
+      <div class="flex items-center justify-between mb-4">
+        <span id="guideStepBadge" class="text-[10px] uppercase tracking-wider font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full border border-indigo-100">Langkah 1 dari 5</span>
+        <button onclick="closeGuideModal()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">Lewati</button>
+      </div>
+
+      <!-- Konten Step 1 -->
+      <div id="guideStep1" class="guide-step">
+        <div class="text-3xl mb-2">📅</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">1. Pilih Minggu Pertemuan</h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Gunakan tombol **"Minggu Lalu / Minggu Depan"** di bagian kanan atas header untuk berpindah ke minggu yang Anda inginkan.
+        </p>
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-500 italic mb-6">
+          💡 Tanggal pasti untuk hari Senin hingga Jumat akan otomatis disesuaikan.
+        </div>
+      </div>
+
+      <!-- Konten Step 2 -->
+      <div id="guideStep2" class="guide-step hidden">
+        <div class="text-3xl mb-2">🟢</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">2. Pilih Slot "Tersedia"</h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Cari kolom hari dan rentang jam kerja (08:00 - 20:00 WIB). Klik pada slot yang berwarna hijau bertuliskan **"Tersedia"**.
+        </p>
+        <div class="p-2.5 rounded-lg border border-dashed border-slate-300 bg-white text-xs font-medium text-slate-600 flex justify-between items-center mb-6">
+          <span>09:00 - 09:30</span>
+          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">Tersedia</span>
+        </div>
+      </div>
+
+      <!-- Konten Step 3 -->
+      <div id="guideStep3" class="guide-step hidden">
+        <div class="text-3xl mb-2">⏱️</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">3. Tentukan Durasi & Isi Identitas</h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Pilih berapa lama Anda ingin bertemu (30 Menit, 1 Jam, 1.5 Jam, atau 2 Jam). Lalu lengkapi nama, email Google, dan WhatsApp Anda.
+        </p>
+        <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs text-indigo-700 mb-6">
+          📌 Waktu selesai akan otomatis terkalkulasi tanpa melebihi jam operasional 20:00 WIB.
+        </div>
+      </div>
+
+      <!-- Konten Step 4 -->
+      <div id="guideStep4" class="guide-step hidden">
+        <div class="text-3xl mb-2">📎</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">4. Lampiran & Kirim Pengajuan</h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Unggah berkas pendukung (seperti draft proposal/skripsi) jika ada, lalu klik tombol **"Kirim Pengajuan"**.
+        </p>
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-500 mb-6">
+          📧 Undangan Google Calendar & konfirmasi email akan otomatis terkirim ke email Anda.
+        </div>
+      </div>
+
+      <!-- Konten Step 5 -->
+      <div id="guideStep5" class="guide-step hidden">
+        <div class="text-3xl mb-2">🔴</div>
+        <h3 class="text-base font-bold text-slate-900 mb-2">5. Slot Terisi / Booked</h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Setelah pengajuan berhasil, slot jam tersebut akan berubah menjadi warna merah bertuliskan **"Terisi"** di papan Kanban dan tidak bisa dipilih orang lain.
+        </p>
+        <div class="p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-xs font-medium flex justify-between items-center mb-6">
+          <div>
+            <div class="font-bold text-[11px]">Bimbingan Skripsi</div>
+            <div class="text-[10px] opacity-75">09:00 - 09:30</div>
+          </div>
+          <span class="text-[9px] bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded font-bold">Terisi</span>
+        </div>
+      </div>
+
+      <!-- Footer Tombol Navigasi Guide -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button id="guidePrevBtn" onclick="navigateGuide(-1)" class="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-30" disabled>&larr; Kembali</button>
+        <button id="guideNextBtn" onclick="navigateGuide(1)" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Lanjut &rarr;</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Modal Form Booking -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
@@ -58,7 +148,6 @@
       <p id="selectedSlotText" class="text-xs font-semibold text-indigo-600 mb-4 bg-indigo-50 p-2.5 rounded-lg block"></p>
 
       <form id="bookingForm" onsubmit="submitBooking(event)" class="space-y-4">
-        <!-- Pilihan Durasi Pertemuan -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Durasi Pertemuan *</label>
           <select id="durasi" onchange="updateEndTime()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-900 outline-none bg-white">
@@ -138,7 +227,6 @@
   </footer>
 
   <script>
-    // WEB APP URL GOOGLE APPS SCRIPT LENGKAP
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMquagyF8HYAdm2PgEA8rsUoSelS6C9CPWUuRrzf5mvjaWCXEWA18Ntb1jt31wTCohMw/exec";
 
     let currentMonday = getMonday(new Date());
@@ -147,12 +235,55 @@
     let baseStartHour = null;
     let baseStartMinute = null;
     let currentDayName = "";
+    let currentGuideStep = 1;
 
     const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
     window.onload = () => {
       fetchEventsAndRender();
+      
+      // Tampilkan tutorial otomatis jika belum pernah dilihat
+      if (!localStorage.getItem('hasSeenGuide')) {
+        openGuideModal(1);
+      }
     };
+
+    // FUNGSI NAVIGASI TUTORIAL ONBOARDING
+    function openGuideModal(step = 1) {
+      currentGuideStep = step;
+      updateGuideUI();
+      document.getElementById('guideModal').classList.remove('hidden');
+    }
+
+    function closeGuideModal() {
+      document.getElementById('guideModal').classList.add('hidden');
+      localStorage.setItem('hasSeenGuide', 'true');
+    }
+
+    function navigateGuide(direction) {
+      currentGuideStep += direction;
+      if (currentGuideStep > 5) {
+        closeGuideModal();
+        return;
+      }
+      updateGuideUI();
+    }
+
+    function updateGuideUI() {
+      document.getElementById('guideStepBadge').innerText = `Langkah ${currentGuideStep} dari 5`;
+      
+      for (let i = 1; i <= 5; i++) {
+        const stepElem = document.getElementById(`guideStep${i}`);
+        if (i === currentGuideStep) {
+          stepElem.classList.remove('hidden');
+        } else {
+          stepElem.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('guidePrevBtn').disabled = currentGuideStep === 1;
+      document.getElementById('guideNextBtn').innerText = currentGuideStep === 5 ? "Selesai & Mengerti" : "Lanjut \u2192";
+    }
 
     function getMonday(d) {
       const date = new Date(d);
@@ -229,7 +360,6 @@
             const slotTimeStart = new Date(`${dateISO}T${timeStart}:00`);
             const slotTimeEnd = new Date(`${dateISO}T${timeEnd}:00`);
 
-            // Cek apakah slot waktu ini berbenturan dengan event yang sudah di-booking
             const existingEvent = bookedEvents.find(ev => {
               const evStart = new Date(ev.startTime);
               const evEnd = new Date(ev.endTime);
@@ -239,7 +369,7 @@
             const slotBtn = document.createElement('button');
             
             if (existingEvent) {
-              slotBtn.className = "text-xs p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-left font-medium flex justify-between items-center cursor-pointer";
+              slotBtn.className = "text-xs p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-left font-medium flex justify-between items-center cursor-pointer shadow-sm";
               slotBtn.innerHTML = `
                 <div class="truncate max-w-[110px]">
                   <div class="font-bold text-[11px] truncate">${existingEvent.title}</div>
