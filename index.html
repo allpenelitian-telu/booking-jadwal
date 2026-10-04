@@ -12,33 +12,39 @@
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
 
-  <!-- Header Profil Dosen & Filter Tanggal -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center font-bold text-lg justify-center shadow">
-          DS
+  <!-- Main Content Wrapper -->
+  <div>
+    <!-- Header Profil Dosen & Navigasi Minggu -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center font-bold text-lg justify-center shadow">
+            DS
+          </div>
+          <div>
+            <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
+            <p class="text-xs text-slate-500">Senin – Jumat | 08:00 – 20:00 WIB (Interval 30 Menit)</p>
+          </div>
         </div>
-        <div>
-          <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
-          <p class="text-xs text-slate-500">Senin – Jumat | 08:00 – 20:00 WIB (Interval 30 Menit)</p>
+
+        <!-- Navigasi Minggu (Previous / Next Week) -->
+        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button onclick="changeWeek(-1)" class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg shadow-sm hover:bg-slate-50 transition text-slate-700">&larr; Minggu Lalu</button>
+          <span id="weekLabel" class="text-xs font-bold px-2 text-slate-700 min-w-[140px] text-center">--</span>
+          <button onclick="changeWeek(1)" class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg shadow-sm hover:bg-slate-50 transition text-slate-700">Minggu Depan &rarr;</button>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <label for="datePicker" class="text-xs font-semibold text-slate-600">Pilih Tanggal:</label>
-        <input type="date" id="datePicker" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-slate-900 outline-none">
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Main Content: Kanban Board (5 Hari Kerja) -->
-  <main class="max-w-7xl mx-auto px-4 mt-6">
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto" id="kanbanBoard">
-      <!-- Kolom Senin - Jumat di-render via JavaScript -->
-    </div>
-  </main>
+    <!-- Main Content: Kanban Board (5 Hari Kerja dengan Tanggal Pasti) -->
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto" id="kanbanBoard">
+        <!-- Kolom Senin - Jumat di-render via JavaScript -->
+      </div>
+    </main>
+  </div>
 
   <!-- Modal Form Booking -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
@@ -100,51 +106,73 @@
     </div>
   </div>
 
+  <!-- Footer Aplikasi -->
+  <footer class="mt-12 py-6 border-t border-slate-200 bg-white text-center">
+    <p class="text-xs font-medium text-slate-500">Dibuat oleh ANM 2026</p>
+  </footer>
+
   <script>
     // WEB APP URL GOOGLE APPS SCRIPT
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdIgzxqWNmvBL0_nrbANSEFyAsuKSaLHbyU74JLRIZDlYrJ6TQPxmZH8LC_BDYDw3gbw/exec";
 
-    let selectedStartTime = null;
-    let selectedEndTime = null;
-    let baseSelectedDate = null;
+    let currentMonday = getMonday(new Date());
+    let selectedDateString = null;
     let baseStartHour = null;
     let baseStartMinute = null;
     let currentDayName = "";
 
-    const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
+    const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
     window.onload = () => {
-      initDatePicker();
       renderKanban();
     };
 
-    function initDatePicker() {
-      const today = new Date();
-      
-      // Jika hari ini Sabtu (6) atau Minggu (0), arahkan default ke hari Senin terdekat
-      const dayOfWeek = today.getDay();
-      if (dayOfWeek === 0) {
-        today.setDate(today.getDate() + 1);
-      } else if (dayOfWeek === 6) {
-        today.setDate(today.getDate() + 2);
-      }
+    // Helper untuk mencari tanggal hari Senin minggu berjalan
+    function getMonday(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // penyesuaian jika hari Minggu
+      return new Date(date.setDate(diff));
+    }
 
-      document.getElementById('datePicker').value = today.toISOString().split('T')[0];
-      document.getElementById('datePicker').addEventListener('change', renderKanban);
+    // Fungsi mengubah minggu (Next / Prev)
+    function changeWeek(offset) {
+      currentMonday.setDate(currentMonday.getDate() + (offset * 7));
+      renderKanban();
     }
 
     function renderKanban() {
       const board = document.getElementById('kanbanBoard');
       board.innerHTML = '';
 
-      days.forEach((dayName) => {
+      // Hitung tanggal Jumat (akhir minggu)
+      const currentFriday = new Date(currentMonday);
+      currentFriday.setDate(currentFriday.getDate() + 4);
+
+      // Tampilkan label rentang tanggal di header
+      const optionsMonth = { day: 'numeric', month: 'short' };
+      const startStr = currentMonday.toLocaleDateString('id-ID', optionsMonth);
+      const endStr = currentFriday.toLocaleDateString('id-ID', { ...optionsMonth, year: 'numeric' });
+      document.getElementById('weekLabel').innerText = `${startStr} - ${endStr}`;
+
+      // Generate 5 Kolom (Senin - Jumat)
+      dayNames.forEach((dayName, index) => {
+        const colDate = new Date(currentMonday);
+        colDate.setDate(colDate.getDate() + index);
+
+        const dateISO = colDate.toISOString().split('T')[0];
+        const dateFormatted = colDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
         const col = document.createElement('div');
         col.className = "bg-white rounded-xl border border-slate-200 p-3 flex flex-col gap-2 shadow-sm min-w-[200px]";
         
-        // Header Hari
-        col.innerHTML = `<div class="font-bold text-sm text-slate-700 pb-2 border-b border-slate-100 flex justify-between items-center">
-          <span>${dayName}</span>
-        </div>`;
+        // Header Hari + Tanggal Pasti (Contoh: Senin, 5 Okt)
+        col.innerHTML = `
+          <div class="pb-2 border-b border-slate-100">
+            <div class="font-bold text-sm text-slate-800">${dayName}</div>
+            <div class="text-[11px] text-slate-500 font-medium">${dateFormatted}</div>
+          </div>
+        `;
 
         // Generate Slot 08:00 - 20:00 (Interval 30 Menit)
         for (let hour = 8; hour < 20; hour++) {
@@ -158,7 +186,7 @@
             slotBtn.className = "text-xs p-2.5 rounded-lg border border-dashed border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition text-slate-600 text-left font-medium flex justify-between items-center";
             slotBtn.innerHTML = `<span>${timeStart} - ${timeEnd}</span> <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">Tersedia</span>`;
             
-            slotBtn.onclick = () => openBookingModal(dayName, timeStart);
+            slotBtn.onclick = () => openBookingModal(dayName, dateFormatted, dateISO, timeStart);
             col.appendChild(slotBtn);
           });
         }
@@ -166,9 +194,10 @@
       });
     }
 
-    function openBookingModal(day, start) {
-      currentDayName = day;
-      baseSelectedDate = document.getElementById('datePicker').value;
+    function openBookingModal(dayName, dateFormatted, dateISO, start) {
+      currentDayName = `${dayName}, ${dateFormatted}`;
+      selectedDateString = dateISO;
+      
       const [h, m] = start.split(':');
       baseStartHour = parseInt(h);
       baseStartMinute = parseInt(m);
@@ -183,14 +212,14 @@
     function updateEndTime() {
       const durationMinutes = parseInt(document.getElementById('durasi').value);
       
-      // Hitung Waktu Selesai berdasarkan Waktu Mulai + Durasi
-      const startDateTime = new Date(`${baseSelectedDate}T${String(baseStartHour).padStart(2, '0')}:${String(baseStartMinute).padStart(2, '0')}:00`);
+      // Hitung Waktu Selesai berdasarkan Tanggal Hari Terpilih + Waktu Mulai + Durasi
+      const startDateTime = new Date(`${selectedDateString}T${String(baseStartHour).padStart(2, '0')}:${String(baseStartMinute).padStart(2, '0')}:00`);
       const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60000);
 
-      // Cek agar tidak melewati batas jam kerja (20:00 WIB)
+      // Cek batas jam operasional (20:00 WIB)
       if (endDateTime.getHours() > 20 || (endDateTime.getHours() === 20 && endDateTime.getMinutes() > 0)) {
         alert('Durasi yang dipilih melebihi jam kerja operasional (Maksimal s/d jam 20:00 WIB).');
-        document.getElementById('durasi').value = "30"; // Reset ke 30 Menit
+        document.getElementById('durasi').value = "30";
         updateEndTime();
         return;
       }
