@@ -11,14 +11,14 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     
-    /* CSS Kelas Khusus Spotlight Highlight */
+    /* Highlight khusus spotlight agar menembus backdrop gelap */
     .spotlight-active {
       position: relative !important;
-      z-index: 60 !important;
-      background-color: white !important;
-      box-shadow: 0 0 0 4px #6366f1, 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+      z-index: 100 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 4px #4f46e5, 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
       border-radius: 0.75rem !important;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease-in-out;
     }
   </style>
 </head>
@@ -27,7 +27,7 @@
   <!-- Main Content Wrapper -->
   <div>
     <!-- Header Profil Dosen & Navigasi Minggu -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+    <header id="mainHeader" class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center font-bold text-lg justify-center shadow">
@@ -36,7 +36,6 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="font-bold text-lg text-slate-900">Jadwal Temu Dosen</h1>
-              <!-- Tombol Pemicu Tutorial Spotlight -->
               <button onclick="startSpotlightTour()" class="text-[11px] bg-indigo-50 text-indigo-600 font-semibold px-2.5 py-1 rounded-full border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-1">
                 <span>❓</span> Cara Pakai
               </button>
@@ -60,20 +59,19 @@
         ⏳ Menyinkronkan jadwal dari Google Calendar...
       </div>
       
-      <!-- Target Spotlight Step 2 & 3: Board Kanban -->
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto p-1" id="kanbanBoard">
         <!-- Kolom Senin - Jumat di-render via JavaScript -->
       </div>
     </main>
   </div>
 
-  <!-- OVERLAY / GELAPKAN TAMPILAN UNTUK SPOTLIGHT -->
-  <div id="tourBackdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs hidden z-50 transition-opacity"></div>
+  <!-- BACKDROP GELAP SPOTLIGHT TOUR -->
+  <div id="tourBackdrop" class="fixed inset-0 bg-slate-950/75 hidden z-50 transition-opacity"></div>
 
-  <!-- FLOATING CARD PETUNJUK OVERLAY (Menempel dekat elemen terang) -->
-  <div id="tourTooltip" class="fixed hidden z-70 bg-white p-5 rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transition-all duration-300">
+  <!-- TOOLTIP DETAILED GUIDE (MENEMPEL DI BAWAH ELEMEN YANG DISOROT) -->
+  <div id="tourTooltip" class="fixed hidden z-[110] bg-white p-5 rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transition-all duration-200">
     <div class="flex items-center justify-between mb-2">
-      <span id="tourStepBadge" class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Langkah 1/3</span>
+      <span id="tourStepBadge" class="text-[10px] uppercase font-bold bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full">Langkah 1/3</span>
       <button onclick="stopSpotlightTour()" class="text-xs text-slate-400 hover:text-slate-600 font-bold">&times;</button>
     </div>
     
@@ -86,7 +84,7 @@
     </div>
   </div>
 
-  <!-- Modal Form Booking (Target Spotlight Step 4) -->
+  <!-- Modal Form Booking -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto">
       <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
@@ -197,25 +195,24 @@
       {
         targetId: "targetWeekNav",
         title: "1. Navigasi Pilihan Minggu",
-        desc: "Klik tombol 'Minggu Lalu' atau 'Minggu Depan' di sini untuk melihat ketersediaan jadwal dosen pada minggu tertentu.",
-        pos: "bottom"
+        desc: "Klik tombol 'Minggu Lalu' atau 'Minggu Depan' di sini untuk melihat ketersediaan jadwal dosen pada minggu tertentu."
       },
       {
         targetSelector: ".first-available-slot",
         title: "2. Slot 'Tersedia' (Warna Hijau)",
-        desc: "Slot bernuansa hijau menunjukkan ketersediaan jam dosen. Klik slot tersebut untuk mulai mengajukan jadwal temu.",
-        pos: "center"
+        desc: "Slot bernuansa hijau menunjukkan ketersediaan jam dosen. Klik slot tersebut untuk mulai mengajukan jadwal temu."
       },
       {
         targetSelector: ".first-booked-slot",
         title: "3. Slot 'Terisi / Booked' (Warna Merah)",
-        desc: "Slot berwarna merah menandakan jam tersebut sudah dipesan oleh mahasiswa lain atau diisi agenda dosen. Anda dapat mengeklik untuk melihat rincian acaranya.",
-        pos: "center"
+        desc: "Slot berwarna merah menandakan jam tersebut sudah terisi. Anda dapat mengeklik untuk melihat rincian acaranya."
       }
     ];
 
     function startSpotlightTour() {
       currentSpotlightStep = 1;
+      // Naikkan z-index header agar child element-nya (targetWeekNav) tidak terpotong stacking context
+      document.getElementById('mainHeader').style.zIndex = "100";
       document.getElementById('tourBackdrop').classList.remove('hidden');
       document.getElementById('tourTooltip').classList.remove('hidden');
       showSpotlightStep(currentSpotlightStep);
@@ -223,6 +220,7 @@
 
     function stopSpotlightTour() {
       clearHighlights();
+      document.getElementById('mainHeader').style.zIndex = "10";
       document.getElementById('tourBackdrop').classList.add('hidden');
       document.getElementById('tourTooltip').classList.add('hidden');
     }
@@ -251,7 +249,6 @@
         targetEl = document.querySelector(stepData.targetSelector);
       }
 
-      // Jika target berupa slot terisi dan saat itu belum ada, fallback ke elemen kanban
       if (!targetEl) {
         targetEl = document.getElementById('kanbanBoard');
       }
@@ -266,22 +263,25 @@
       document.getElementById('tourPrevBtn').disabled = stepIndex === 1;
       document.getElementById('tourNextBtn').innerText = stepIndex === tourSteps.length ? "Selesai" : "Lanjut \u2192";
 
-      // Hitung Posisi Tooltip Melayang mendekati Elemen Target
+      // Perhitungan posisi tooltip presisi di bawah elemen yang di-highlight
       const rect = targetEl.getBoundingClientRect();
       const tooltip = document.getElementById('tourTooltip');
       
       let topPos = rect.bottom + window.scrollY + 12;
       let leftPos = rect.left + window.scrollX;
 
+      // Geser posisi horisontal agar tidak terpotong layar kanan
       if (leftPos + 380 > window.innerWidth) {
         leftPos = window.innerWidth - 400;
       }
-      if (topPos + 200 > window.innerHeight + window.scrollY) {
-        topPos = rect.top + window.scrollY - 180;
+
+      // Jika posisi bawah terlalu melimpah, tampilkan di atas elemen
+      if (rect.bottom + 220 > window.innerHeight) {
+        topPos = rect.top + window.scrollY - 210;
       }
 
-      tooltip.style.top = `${Math.max(20, topPos)}px`;
-      tooltip.style.left = `${Math.max(20, leftPos)}px`;
+      tooltip.style.top = `${Math.max(10, topPos)}px`;
+      tooltip.style.left = `${Math.max(10, leftPos)}px`;
 
       targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
